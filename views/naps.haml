@@ -1,0 +1,25 @@
+.container
+  .page-header
+    %h1= @title
+  - if @naps
+    .row
+      .span12
+        %table.table.table-striped.table-bordered
+          %thead
+            %tr
+              %th(width="50%") App
+              %th(width="50%") Status
+          %tbody
+            - @naps.each do |x|
+              %tr
+                %td
+                  %a(href="#{r :app, x[:name]}")= x[:name]
+                %td
+                  %i(class="icon-#{x[:icon]}")
+                  %span(class="app-#{x[:stat]}")= x[:stat]
+                  = x[:time]
+  - else
+    You don't have any apps.
+  %a.btn.pull-right(href="#{r :naps}")
+    %i.icon-refresh
+    Refresh
