@@ -1,0 +1,14 @@
+!!! 5
+%html
+  %head
+    %title= @title
+    - LAYOUT_CSS.each do |x|
+      %link(rel='stylesheet' type='text/css' href='#{x}')
+    - LAYOUT_JS.each do |x|
+      %script(type='text/javascript' src='#{x}')
+  %body
+    .navbar.navbar-fixed-top
+      .navbar-inner
+        .container
+          %a.brand(href='#')= BRAND
+    = yield

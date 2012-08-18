@@ -1,0 +1,10 @@
+.container
+  .hero-unit
+    %h1 Status
+  - if @naps
+    .row
+      - @naps.each do |x|
+        .span6= x[:name]
+        .span6= x[:stat]
+  - else
+    (no apps)
