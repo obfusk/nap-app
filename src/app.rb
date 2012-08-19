@@ -9,13 +9,18 @@
 #
 # --                                                            # }}}1
 
+# require 'sinatra/json'
 require 'haml'
 
 require './cfg'
 
 BRAND       = 'nap'
 LAYOUT_CSS  = %w[ /css/bootstrap.css /css/layout.css ]
-LAYOUT_JS   = %w[]
+LAYOUT_JS   = %w[
+  https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js
+]
+
+NAPS_JS     = %w[ /js/naps.js ]
 
 # --
 
@@ -27,30 +32,51 @@ end                                                             # }}}1
 
 # --
 
+# NB: BE VERY CAREFUL WITH %x/sys !!!
+
 helpers do
+  def sys (x)                                                   # {{{1
+    pid = fork do
+      Process.setsid
+      %x[ #{x} ]
+    end
+    Process.waitpid pid
+    nil
+  end                                                           # }}}1
+
   def r (what, *more)
     to(R[what][*more])
   end
 
-  def icon (s)                                                  # {{{1
-    case s
+  def icon (stat)                                               # {{{1
+    case stat
       when 'dead'   ; 'warning-sign'
       when 'stopped'; 'off'
       when 'running'; 'ok'
-      else raise '...'                                          # TODO
     end
+  end                                                           # }}}1
+
+  def mod (app, stat)                                           # {{{1
+    return unless MODIFY
+
+    act, ing, icon = case stat
+      when 'dead', 'stopped'; [:start, 'Starting', 'play']
+      when 'running'        ; [:stop , 'Stopping', 'stop']
+    end
+
+    { link: r(act, app), icon: icon, act: ing }
   end                                                           # }}}1
 
   def naps                                                      # {{{1
     # TODO: check return value etc.
 
-    %x[ naps list ].split.map do |x|
-      s, t  = %x[ nap status #{x} -s ].strip.split ' ', 2
-      { name: x, stat: s, time: t, icon: icon(s) }
+    %x[ naps list ].split.map do |app|
+      s, t  = %x[ nap status #{app} -s ].strip.split ' ', 2
+      { name: app, stat: s, time: t, icon: icon(s), mod: mod(app, s) }
     end
   end                                                           # }}}1
 
-  def nap_info (x)
+  def nap_info (app)
     # TODO
   end
 end
@@ -58,8 +84,12 @@ end
 # --
 
 R = {
-  naps: ->()  { '/naps'     },
-  app:  ->(x) { "/app/#{x}" },
+  naps:       ->()  { '/naps'       },
+  app:        ->(x) { "/app/#{x}"   },
+  start:      ->(x) { "/start/#{x}" },
+  stop:       ->(x) { "/stop/#{x}"  },
+  start_all:  ->()  { "/start-all"  },
+  stop_all:   ->()  { "/stop-all"   },
 }
 
 # --
@@ -76,16 +106,35 @@ get '/' do
 end
 
 get '/naps' do                                                  # {{{1
-  @title  = 'naps'
-  @naps   = naps
+  @layout_js  = NAPS_JS
+  @title      = 'naps'
+  @naps       = naps
   haml :naps
 end                                                             # }}}1
 
-get %r[^/app/([a-z_-]+)$] do |app|                              # {{{1
-  @title  = "nap info #{app}"
-  @info   = nap_info app
-  haml :app
-end                                                             # }}}1
+# get %r[^/app/([a-z0-9_-]+)$] do |app|                         # {{{1
+#   @title  = "nap info #{app}"
+#   @info   = nap_info app
+#   haml :app
+# end                                                           # }}}1
+
+if MODIFY
+  post %r[^/start/([a-z0-9_-]+)$] do |app|
+    sys "nap start #{app}"
+  end
+
+  post %r[^/stop/([a-z0-9_-]+)$] do |app|
+    sys "nap stop #{app}"
+  end
+
+  post '/start-all' do
+    sys 'naps sap'
+  end
+
+  post '/stop-all' do
+    sys 'naps stop'
+  end
+end
 
 # --
 

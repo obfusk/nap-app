@@ -3,12 +3,12 @@
   %head
     %title= @title
     - (LAYOUT_CSS + @layout_css).each do |x|
-      %link(rel='stylesheet' type='text/css' href='#{x}')
+      %link{ rel: 'stylesheet', type: 'text/css', href: x }
     - (LAYOUT_JS + @layout_js).each do |x|
-      %script(type='text/javascript' src='#{x}')
+      %script{ type: 'text/javascript', src: x }
   %body
     .navbar.navbar-fixed-top
       .navbar-inner
         .container
-          %a.brand(href="#{r :naps}")= BRAND
+          %a.brand{ href: r(:naps) }= BRAND
     = yield

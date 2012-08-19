@@ -1,25 +1,41 @@
 .container
   .page-header
     %h1= @title
-  - if @naps
+  - unless @naps.empty?
     .row
       .span12
         %table.table.table-striped.table-bordered
           %thead
             %tr
-              %th(width="50%") App
-              %th(width="50%") Status
+              %th.w50 App
+              %th.w50 Status
           %tbody
             - @naps.each do |x|
               %tr
                 %td
-                  %a(href="#{r :app, x[:name]}")= x[:name]
+                  -# %a{ href: r(:app, x[:name]) }=
+                  = x[:name]
                 %td
-                  %i(class="icon-#{x[:icon]}")
-                  %span(class="app-#{x[:stat]}")= x[:stat]
+                  %i{ class: 'icon-' + x[:icon] }
+                  %span{ class: 'app-' + x[:stat] }= x[:stat]
                   = x[:time]
+                  - if x[:mod]
+                    %a.btn.pull-right.app-mod{ href: x[:mod][:link],
+                        :'data-action' => x[:mod][:act] }
+                      %i{ class: 'icon-' + x[:mod][:icon] }
+                      %span
   - else
     You don't have any apps.
-  %a.btn.pull-right(href="#{r :naps}")
-    %i.icon-refresh
-    Refresh
+  .btn-toolbar.pull-right
+    - if MODIFY and not @naps.empty?
+      %a.btn.app-all{ href: r(:start_all),
+                      :'data-action' => 'Starting' }
+        %i.icon-play
+        %span Start All
+      %a.btn.app-all{ href: r(:stop_all),
+                      :'data-action' => 'Stopping' }
+        %i.icon-stop
+        %span Stop All
+    %a.btn{ href: r(:naps) }
+      %i.icon-refresh
+      Refresh
