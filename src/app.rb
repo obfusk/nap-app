@@ -2,7 +2,7 @@
 #
 # File        : src/app.rb
 # Maintainer  : Felix C. Stegerman <flx@obfusk.net>
-# Date        : 2012-08-18
+# Date        : 2012-08-20
 #
 # Copyright   : Copyright (C) 2012  Felix C. Stegerman
 # Licence     : GPLv2
@@ -12,7 +12,10 @@
 # require 'sinatra/json'
 require 'haml'
 
-require './cfg'
+NAPRC       = [ENV['NAP_APP_RC'], ENV['HOME'] + '/.nap-app-rc']
+              .reject { |x| x.nil? or x.empty? } .first
+
+require NAPRC
 
 BRAND       = 'nap'
 LAYOUT_CSS  = %w[ /css/bootstrap.css /css/layout.css ]
