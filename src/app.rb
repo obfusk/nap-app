@@ -15,7 +15,7 @@ require 'haml'
 NAPRC       = [ENV['NAP_APP_RC'], ENV['HOME'] + '/.nap-app-rc']
               .reject { |x| x.nil? or x.empty? } .first
 
-require NAPRC
+load NAPRC
 
 BRAND       = 'nap'
 LAYOUT_CSS  = %w[ /css/bootstrap.css /css/layout.css ]
