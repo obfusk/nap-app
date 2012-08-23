@@ -7,8 +7,11 @@
     - (LAYOUT_JS + @layout_js).each do |x|
       %script{ type: 'text/javascript', src: x }
   %body
-    .navbar.navbar-fixed-top
+    .navbar.navbar-fixed-top.navbar-inverse
       .navbar-inner
         .container
-          %a.brand{ href: r(:naps) }= BRAND
+          %a.brand{ href: BRAND_URL }= BRAND
+          %ul.nav
+            %li.active
+              %a{ href: r(:naps) } apps
     = yield
