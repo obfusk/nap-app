@@ -1,5 +1,4 @@
-source 'http://rubygems.org'
+source :rubygems
 
 gem 'sinatra'
-# gem 'sinatra-contrib'
 gem 'haml'
