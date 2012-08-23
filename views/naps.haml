@@ -2,9 +2,21 @@
   .page-header
     %h1= @title
   - unless @naps.empty?
+    - if @dead > 0
+      .alert
+        %strong Warning!
+        There are #{@dead} dead app(s).
+    - if @stop > 0
+      .alert.alert-info
+        %strong Careful!
+        There are #{@stop} stopped app(s).
+    - if @dead == 0 and @stop == 0
+      .alert.alert-success
+        %strong OK!
+        All apps are running.
     .row
       .span12
-        %table.table.table-striped.table-bordered
+        %table.table.table-striped.table-bordered.table-hover
           %thead
             %tr
               %th.w50 App
@@ -25,17 +37,13 @@
                       %i{ class: 'icon-' + x[:mod][:icon] }
                       %span
   - else
-    You don't have any apps.
+    You don't have any apps (yet).
   .btn-toolbar.pull-right
     - if MODIFY and not @naps.empty?
       %a.btn.app-all{ href: r(:start_all),
                       :'data-action' => 'Starting' }
         %i.icon-play
         %span Start All
-      %a.btn.app-all{ href: r(:stop_all),
-                      :'data-action' => 'Stopping' }
-        %i.icon-stop
-        %span Stop All
     %a.btn{ href: r(:naps) }
       %i.icon-refresh
       Refresh
