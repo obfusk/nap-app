@@ -2,22 +2,26 @@
 #
 # File        : src/app.rb
 # Maintainer  : Felix C. Stegerman <flx@obfusk.net>
-# Date        : 2012-08-20
+# Date        : 2012-08-23
 #
 # Copyright   : Copyright (C) 2012  Felix C. Stegerman
 # Licence     : GPLv2
 #
 # --                                                            # }}}1
 
-# require 'sinatra/json'
 require 'haml'
+
+# --
 
 NAPRC       = [ENV['NAP_APP_RC'], ENV['HOME'] + '/.nap-app-rc']
               .reject { |x| x.nil? or x.empty? } .first
-
 load NAPRC
 
+# --
+
 BRAND       = 'nap'
+BRAND_URL   = 'http://obfusk.github.com/nap/'
+
 LAYOUT_CSS  = %w[ /css/bootstrap.css /css/layout.css ]
 LAYOUT_JS   = %w[
   https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js
@@ -79,30 +83,26 @@ helpers do
     end
   end                                                           # }}}1
 
-  def nap_info (app)
-    # TODO
-  end
+  # def nap_info (app)
+  #   # TODO
+  # end
 end
 
 # --
 
 R = {
   naps:       ->()  { '/naps'       },
-  app:        ->(x) { "/app/#{x}"   },
+# app:        ->(x) { "/app/#{x}"   },
   start:      ->(x) { "/start/#{x}" },
   stop:       ->(x) { "/stop/#{x}"  },
   start_all:  ->()  { "/start-all"  },
-  stop_all:   ->()  { "/stop-all"   },
 }
 
 # --
 
-before do                                                       # {{{1
-  @layout_css = []
-  @layout_js  = []
-
-  @title = @naps = @info = nil
-end                                                             # }}}1
+before do
+  @layout_css = @layout_js = []
+end
 
 get '/' do
   redirect r(:naps)
@@ -110,14 +110,19 @@ end
 
 get '/naps' do                                                  # {{{1
   @layout_js  = NAPS_JS
-  @title      = 'naps'
+  @title      = 'apps'
+
   @naps       = naps
+  @dead       = @naps.count { |x| x[:stat] == 'dead'    }
+  @stop       = @naps.count { |x| x[:stat] == 'stopped' }
+
   haml :naps
 end                                                             # }}}1
 
 # get %r[^/app/([a-z0-9_-]+)$] do |app|                         # {{{1
-#   @title  = "nap info #{app}"
+#   @title  = app
 #   @info   = nap_info app
+#
 #   haml :app
 # end                                                           # }}}1
 
@@ -132,10 +137,6 @@ if MODIFY
 
   post '/start-all' do
     sys 'naps sap'
-  end
-
-  post '/stop-all' do
-    sys 'naps stop'
   end
 end
 
