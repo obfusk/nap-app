@@ -2,7 +2,7 @@
 #
 # File        : src/app.rb
 # Maintainer  : Felix C. Stegerman <flx@obfusk.net>
-# Date        : 2012-08-23
+# Date        : 2012-08-24
 #
 # Copyright   : Copyright (C) 2012  Felix C. Stegerman
 # Licence     : GPLv2
@@ -109,12 +109,12 @@ get '/' do
 end
 
 get '/naps' do                                                  # {{{1
-  @layout_js  = NAPS_JS
-  @title      = 'apps'
-
   @naps       = naps
   @dead       = @naps.count { |x| x[:stat] == 'dead'    }
   @stop       = @naps.count { |x| x[:stat] == 'stopped' }
+
+  @layout_js  = NAPS_JS if MODIFY and not @naps.empty?
+  @title      = 'apps'
 
   haml :naps
 end                                                             # }}}1
