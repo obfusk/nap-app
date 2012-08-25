@@ -3,12 +3,12 @@
     %h1= @title
   - unless @naps.empty?
     - if @dead > 0
-      .alert
+      .alert.alert-error
         %strong Warning!
         #{@dead} dead app(s).
     - if @stop > 0
       .alert.alert-info
-        %strong Careful!
+        %strong NB:
         #{@stop} stopped app(s).
     - if @dead == 0 and @stop == 0
       .alert.alert-success
