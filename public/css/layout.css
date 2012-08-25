@@ -1,7 +1,4 @@
-body          { padding-top: 90px;  }
-
-.app-dead     { color: red;         }
-.app-stopped  { color: blue;        }
-.app-running  { color: green;       }
-
-.w50          { width: 50%;         }
+body { padding-top: 90px; }
+.w30 { width: 30%; }
+.w50 { width: 50%; }
+.w70 { width: 70%; }

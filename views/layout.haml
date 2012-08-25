@@ -1,7 +1,7 @@
 !!! 5
 %html
   %head
-    %title= @title
+    %title&= @title
     - (LAYOUT_CSS + @layout_css).each do |x|
       %link{ rel: 'stylesheet', type: 'text/css', href: x }
     - (LAYOUT_JS + @layout_js).each do |x|
@@ -10,8 +10,8 @@
     .navbar.navbar-fixed-top.navbar-inverse
       .navbar-inner
         .container
-          %a.brand{ href: BRAND_URL }= BRAND
+          %a.brand{ href: BRAND_URL }&= BRAND
           %ul.nav
-            %li.active
-              %a{ href: r(:naps) } apps
+            %li{ class: act(:apps) }
+              %a{ href: r(:apps) } apps
     = yield

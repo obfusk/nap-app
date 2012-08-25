@@ -2,12 +2,17 @@
 #
 # File        : src/app.rb
 # Maintainer  : Felix C. Stegerman <flx@obfusk.net>
-# Date        : 2012-08-24
+# Date        : 2012-08-25
 #
 # Copyright   : Copyright (C) 2012  Felix C. Stegerman
 # Licence     : GPLv2
 #
 # --                                                            # }}}1
+
+# NB: BE VERY CAREFUL WITH cmd/%x/sys !!!
+# NB: MAKE SURE TO PROPERLY VALIDATE ALL ROUTE PARAMETERS !!!
+
+# --
 
 require 'haml'
 
@@ -19,6 +24,11 @@ load NAPRC
 
 # --
 
+HIST        = 5
+TAIL        = 10
+
+# --
+
 BRAND       = 'nap'
 BRAND_URL   = 'http://obfusk.github.com/nap/'
 
@@ -27,7 +37,7 @@ LAYOUT_JS   = %w[
   https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js
 ]
 
-NAPS_JS     = %w[ /js/naps.js ]
+NAPS_JS     = %w[ /js/apps.js ]
 
 # --
 
@@ -39,27 +49,54 @@ end                                                             # }}}1
 
 # --
 
-# NB: BE VERY CAREFUL WITH %x/sys !!!
+LINES = ->(x) { x.lines.map(&:chomp) }
+
+COMMANDS = {                                                    # {{{1
+  list:   ->()      { %x[ naps list ].split                       },
+  stat:   ->(x)     { %x[ nap status #{x} -s ].strip.split ' ', 2 },
+  info:   ->(x)     { LINES[%x[ nap info #{x} -q ]]               },
+  hist:   ->(x, n)  { LINES[%x[ nap log #{x} hist #{n} -v ]]      },
+  logs:   ->(x)     { %x[ nap log #{x} list ].split               },
+  logfs:  ->(x)     { %x[ nap log #{x} files ].split              },
+  log:    ->(l, n)  { LINES[%x[ tail -n #{n} -- #{l} ]]           },
+  start:  ->(x)     { sys "nap start #{x}"                        },
+  stop:   ->(x)     { %x[ nap stop #{x} ]                         },
+  st_all: ->()      { sys 'naps pstart'                           },
+}                                                               # }}}1
 
 helpers do
-  def sys (x)                                                   # {{{1
-    pid = fork do
-      Process.setsid
-      %x[ #{x} ]
-    end
-    Process.waitpid pid
-    nil
+
+  def r (what, *more) to ROUTES[what][*more] end
+
+  def cmd (x, *args)                                            # {{{1
+    r = COMMANDS[x][*args]
+    $?.exitstatus == 0 or raise 'command returned non-zero'
+    r
   end                                                           # }}}1
 
-  def r (what, *more)
-    to(R[what][*more])
-  end
+  def sys (x)                                                   # {{{1
+    pid = fork do
+      Process.setsid  # will kill server otherwise
+      %x[ #{x} ]      # CAREFUL !!!
+    end
+    Process.waitpid pid
+  end                                                           # }}}1
+
+  def act (x) @active == x ? 'active' : '' end
 
   def icon (stat)                                               # {{{1
     case stat
-      when 'dead'   ; 'warning-sign'
+      when 'dead'   ; 'exclamation-sign'
       when 'stopped'; 'off'
       when 'running'; 'ok'
+    end
+  end                                                           # }}}1
+
+  def label (stat)                                              # {{{1
+    case stat
+      when 'dead'   ; 'label-important'
+      when 'stopped'; 'label-info'
+      when 'running'; 'label-success'
     end
   end                                                           # }}}1
 
@@ -75,69 +112,97 @@ helpers do
   end                                                           # }}}1
 
   def naps                                                      # {{{1
-    # TODO: check return value etc.
-
-    %x[ naps list ].split.map do |app|
-      s, t  = %x[ nap status #{app} -s ].strip.split ' ', 2
-      { name: app, stat: s, time: t, icon: icon(s), mod: mod(app, s) }
+    cmd(:list).map do |app|
+      s, t = cmd(:stat, app)
+      { name: app, stat: s, time: t, icon: icon(s), mod: mod(app, s),
+        lbl: label(s) }
     end
   end                                                           # }}}1
 
-  # def nap_info (app)
-  #   # TODO
-  # end
+  def app_info (app)                                            # {{{1
+    s, t  = cmd :stat, app
+    info  = cmd(:info, app).map { |x| x.split (/\s*: /), 2 }
+    logs  = cmd :logs, app
+
+    { name: app, stat: s, time: t, icon: icon(s), lbl: label(s),
+      info: info, logs: logs }
+  end                                                           # }}}1
+
+  def app_hist (app, n)
+    h = cmd :hist, app, n
+    { cmd: h[0], lines: h[1..-1] }
+  end
+
+  def app_log (app, log, n)                                     # {{{1
+    logfs = cmd :logfs, app
+    logs  = Hash[logfs.map { |x| [File.basename(x, '.log'), x] }]
+    file  = logs[log] or raise 'log not found'
+    cmd :log, file, n
+  end                                                           # }}}1
+
 end
 
 # --
 
-R = {
-  naps:       ->()  { '/naps'       },
-# app:        ->(x) { "/app/#{x}"   },
-  start:      ->(x) { "/start/#{x}" },
-  stop:       ->(x) { "/stop/#{x}"  },
-  start_all:  ->()  { "/start-all"  },
-}
+ROUTES = {                                                      # {{{1
+  apps:   ->()              { '/apps'               },
+  app:    ->(x)             { "/app/#{x}"           },
+  hist:   ->(x, n=HIST)     { "/hist/#{x}/#{n}"     },
+  log:    ->(x, l, n=TAIL)  { "/log/#{x}/#{l}/#{n}" },
+  start:  ->(x)             { "/start/#{x}"         },
+  stop:   ->(x)             { "/stop/#{x}"          },
+  st_all: ->()              { "/start-all"          },
+}                                                               # }}}1
 
 # --
 
 before do
-  @layout_css = @layout_js = []
+  @layout_css = @layout_js  = []
+  @active                   = nil
 end
 
-get '/' do
-  redirect r(:naps)
-end
+get '/' do redirect r(:apps) end
 
-get '/naps' do                                                  # {{{1
+get '/apps' do                                                  # {{{1
   @naps       = naps
   @dead       = @naps.count { |x| x[:stat] == 'dead'    }
   @stop       = @naps.count { |x| x[:stat] == 'stopped' }
 
   @layout_js  = NAPS_JS if MODIFY and not @naps.empty?
+  @active     = :apps
   @title      = 'apps'
 
-  haml :naps
+  haml :apps
 end                                                             # }}}1
 
-# get %r[^/app/([a-z0-9_-]+)$] do |app|                         # {{{1
-#   @title  = app
-#   @info   = nap_info app
-#
-#   haml :app
-# end                                                           # }}}1
+get %r[^/app/([a-z0-9_-]+)$] do |app|                           # {{{1
+  @app    = app_info app
+  @title  = app
+
+  haml :app
+end                                                             # }}}1
+
+get %r[^/hist/([a-z0-9_-]+)/([0-9]+)$] do |app, n|              # {{{1
+  @app    = { name: app, n: n }
+  @hist   = app_hist app, n
+  @title  = "#{app} :: history"
+
+  haml :hist
+end                                                             # }}}1
+
+get %r[^/log/([a-z0-9_-]+)/([a-z0-9_-]+)/([0-9]+)$] do          # {{{1
+|app, log, n|
+  @app    = { name: app, log: log, n: n }
+  @log    = app_log app, log, n
+  @title  = "#{app} :: log :: #{log}"
+
+  haml :log
+end                                                             # }}}1
 
 if MODIFY
-  post %r[^/start/([a-z0-9_-]+)$] do |app|
-    sys "nap start #{app}"
-  end
-
-  post %r[^/stop/([a-z0-9_-]+)$] do |app|
-    sys "nap stop #{app}"
-  end
-
-  post '/start-all' do
-    sys 'naps sap'
-  end
+  post %r[^/start/([a-z0-9_-]+)$]   do |app|  cmd :start, app end
+  post %r[^/stop/([a-z0-9_-]+)$]    do |app|  cmd :stop , app end
+  post '/start-all'                 do        cmd :st_all     end
 end
 
 # --

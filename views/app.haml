@@ -1,4 +1,32 @@
 .container
+  .well.well-small.pull-right
+    %i{ class: 'icon-' + @app[:icon] }
+    %span.label{ class: @app[:lbl] }&= @app[:stat]
+    &= @app[:time]
   .page-header
-    %h1= @title
-  %p Nothing to see here (yet), move along ...
+    %h1&= @title
+  %table.table.table-striped.table-bordered.table-hover
+    %tbody
+      %tr
+        %td.w30 vcs
+        %td.w70
+          %a{ href: r(:hist, @app[:name]) } history
+      %tr
+        %td logs
+        %td
+          - @app[:logs].each do |x|
+            %a{ href: r(:log, @app[:name], x) }&= x
+  %table.table.table-striped.table-bordered.table-hover
+    %thead
+      %tr
+        %th.w30 Setting
+        %th.w70 Value
+    %tbody
+      - @app[:info].each do |x|
+        %tr
+          %td&= x[0]
+          %td&= x[1]
+  .btn-toolbar.pull-right
+    %a.btn{ href: r(:app, @app[:name]) }
+      %i.icon-refresh
+      Refresh

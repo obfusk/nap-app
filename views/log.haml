@@ -1,0 +1,13 @@
+.container
+  .btn-toolbar.pull-right
+    %a.btn{ href: r(:log, @app[:name], @app[:log], @app[:n]) }
+      %i.icon-refresh
+      Refresh
+  .page-header
+    %h1
+      %a{ href: r(:app, @app[:name]) }&= @app[:name]
+      \/ log /
+      &= @app[:log]
+  %pre
+    - @log.each do |x|
+      &= x
