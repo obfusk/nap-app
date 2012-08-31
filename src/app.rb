@@ -2,14 +2,14 @@
 #
 # File        : src/app.rb
 # Maintainer  : Felix C. Stegerman <flx@obfusk.net>
-# Date        : 2012-08-25
+# Date        : 2012-08-31
 #
 # Copyright   : Copyright (C) 2012  Felix C. Stegerman
 # Licence     : GPLv2
 #
 # --                                                            # }}}1
 
-# NB: BE VERY CAREFUL WITH cmd/%x/sys !!!
+# NB: BE VERY CAREFUL WITH cmd/%x/exec/sys !!!
 # NB: MAKE SURE TO PROPERLY VALIDATE ALL ROUTE PARAMETERS !!!
 
 # --
@@ -33,11 +33,12 @@ BRAND       = 'nap'
 BRAND_URL   = 'http://obfusk.github.com/nap/'
 
 LAYOUT_CSS  = %w[ /css/bootstrap.css /css/layout.css ]
-LAYOUT_JS   = %w[
-  https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js
-]
+LAYOUT_JS   = []
 
-NAPS_JS     = %w[ /js/apps.js ]
+NAPS_JS     = %w[
+  https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js
+  /js/apps.js
+]
 
 # --
 
@@ -57,7 +58,7 @@ COMMANDS = {                                                    # {{{1
   info:   ->(x)     { LINES[%x[ nap info #{x} -q ]]               },
   hist:   ->(x, n)  { LINES[%x[ nap log #{x} hist #{n} -v ]]      },
   logs:   ->(x)     { %x[ nap log #{x} list ].split               },
-  logfs:  ->(x)     { %x[ nap log #{x} files ].split              },
+  log_as: ->(x)     { LINES[%x[ nap log #{x} assoc ]]             },
   log:    ->(l, n)  { LINES[%x[ tail -n #{n} -- #{l} ]]           },
   start:  ->(x)     { sys "nap start #{x}"                        },
   stop:   ->(x)     { %x[ nap stop #{x} ]                         },
@@ -69,6 +70,9 @@ helpers do
   def r (what, *more) to ROUTES[what][*more] end
 
   def cmd (x, *args)                                            # {{{1
+    args.all? { |x| x =~ %r[^([a-z0-9A-Z@.:/_-]+)$] } \
+      or raise 'invalid argument'
+
     r = COMMANDS[x][*args]
     $?.exitstatus == 0 or raise 'command returned non-zero'
     r
@@ -77,7 +81,7 @@ helpers do
   def sys (x)                                                   # {{{1
     pid = fork do
       Process.setsid  # will kill server otherwise
-      %x[ #{x} ]      # CAREFUL !!!
+      exec x          # CAREFUL !!!
     end
     Process.waitpid pid
   end                                                           # }}}1
@@ -134,8 +138,7 @@ helpers do
   end
 
   def app_log (app, log, n)                                     # {{{1
-    logfs = cmd :logfs, app
-    logs  = Hash[logfs.map { |x| [File.basename(x, '.log'), x] }]
+    logs  = Hash[cmd(:log_as, app).map { |x| x.split ' ', 2 }]
     file  = logs[log] or raise 'log not found'
     cmd :log, file, n
   end                                                           # }}}1
@@ -190,7 +193,7 @@ get %r[^/hist/([a-z0-9_-]+)/([0-9]+)$] do |app, n|              # {{{1
   haml :hist
 end                                                             # }}}1
 
-get %r[^/log/([a-z0-9_-]+)/([a-z0-9_-]+)/([0-9]+)$] do          # {{{1
+get %r[^/log/([a-z0-9_-]+)/(@?[a-z0-9_-]+)/([0-9]+)$] do        # {{{1
 |app, log, n|
   @app    = { name: app, log: log, n: n }
   @log    = app_log app, log, n
