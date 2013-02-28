@@ -91,6 +91,8 @@ module Obfusk; module Nap; class App < Sinatra::Base
     args.all? { |x| x =~ %r[^([a-z0-9A-Z@.:/_-]+)$] } \
       or raise 'invalid argument'
 
+    p :cmd, x, args # DEBUG
+
     r = COMMANDS[x][*args]
     $?.exitstatus == 0 or raise 'command returned non-zero'
     r
