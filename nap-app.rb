@@ -231,9 +231,23 @@ module Obfusk; module Nap; class App < Sinatra::Base
   # --
 
   if NAP_APP_MODIFY
-    post(%r[^/start/([a-z0-9_-]+)$])  { |app| cmd :start, app }
-    post(%r[^/stop/([a-z0-9_-]+)$])   { |app| cmd :stop , app }
-    post('/start-all')                {       cmd :st_all     }
+    post %r[^/start/([a-z0-9_-]+)$] do |app|
+      content_type :json
+      cmd :start, app
+      { cmd: :start, app: app }.to_json
+    end
+
+    post %r[^/stop/([a-z0-9_-]+)$] do |app|
+      content_type :json
+      cmd :stop, app
+      { cmd: :stop, app: app }.to_json
+    end
+
+    post '/start-all' do
+      content_type :json
+      cmd :st_all
+      { cmd: 'start-all' }.to_json
+    end
   end
 
 end; end; end
