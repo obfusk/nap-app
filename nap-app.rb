@@ -101,6 +101,10 @@ module Obfusk; module Nap; class App < Sinatra::Base
     to ROUTES[what][*more]
   end
 
+  def page (view, locals = {})
+    haml view, locals: locals
+  end
+
   def activate (x)
     @active = x
   end
@@ -198,7 +202,7 @@ module Obfusk; module Nap; class App < Sinatra::Base
     activate :apps
     layout_js *CONFIG[:naps_js] if NAP_APP_MODIFY && !ns.empty?
 
-    haml :apps,
+    page :apps,
       naps:   ns,
       dead:   ns.count { |x| x[:stat] == 'dead'    },
       stop:   ns.count { |x| x[:stat] == 'stopped' },
@@ -206,11 +210,11 @@ module Obfusk; module Nap; class App < Sinatra::Base
   end                                                           # }}}1
 
   get %r[^/app/([a-z0-9_-]+)$] do |app|
-    haml :app, app: app_info(app), title: app
+    page :app, app: app_info(app), title: app
   end
 
   get %r[^/hist/([a-z0-9_-]+)/([0-9]+)$] do |app, n|
-    haml :hist,
+    page :hist,
       app:   { name: app, n: n },
       hist:  app_hist(app, n),
       title: "#{app} :: history"
@@ -218,7 +222,7 @@ module Obfusk; module Nap; class App < Sinatra::Base
 
   get %r[^/log/([a-z0-9_-]+)/(@?[a-z0-9_-]+)/([0-9]+)$] \
   do |app, log, n|
-    haml :log,
+    page :log,
       app:   { name: app, log: log, n: n },
       log:   app_log(app, log, n),
       title: "#{app} :: log :: #{log}"
