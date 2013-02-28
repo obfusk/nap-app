@@ -8,10 +8,6 @@
       %a{ href: r(:app, app[:name]) }&= app[:name]
       \/ log /
       &= app[:log]
-  %table.table.table-bordered.table-hover
-    %tbody
-      - log.each_with_index do |x,i|
-        %tr
-          %td.line-numbers&= i
-          %td.w99
-            %pre&= x
+  %pre
+    - log.each do |x|
+      &= x
