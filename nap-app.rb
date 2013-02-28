@@ -202,7 +202,7 @@ module Obfusk; module Nap; class App < Sinatra::Base
       naps:   ns,
       dead:   ns.count { |x| x[:stat] == 'dead'    },
       stop:   ns.count { |x| x[:stat] == 'stopped' },
-      title:  'apps',
+      title:  'apps'
   end                                                           # }}}1
 
   get %r[^/app/([a-z0-9_-]+)$] do |app|
