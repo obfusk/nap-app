@@ -1,2 +1,3 @@
-require './app'
-run Sinatra::Application
+require 'bundler/setup'
+require './nap-app'
+run Obfusk::Nap::App

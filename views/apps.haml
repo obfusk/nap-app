@@ -1,16 +1,16 @@
 .container
   .page-header
-    %h1&= @title
-  - unless @naps.empty?
-    - if @dead > 0
+    %h1&= title
+  - unless naps.empty?
+    - if dead > 0
       .alert.alert-error
         %strong Warning!
-        #{@dead} dead app(s).
-    - if @stop > 0
+        #{dead} dead app(s).
+    - if stop > 0
       .alert.alert-info
         %strong NB:
-        #{@stop} stopped app(s).
-    - if @dead == 0 and @stop == 0
+        #{stop} stopped app(s).
+    - if dead == 0 && stop == 0
       .alert.alert-success
         %strong OK!
         All apps are running.
@@ -20,7 +20,7 @@
           %th.w50 App
           %th.w50 Status
       %tbody
-        - @naps.each do |x|
+        - naps.each do |x|
           %tr
             %td
               %a{ href: r(:app, x[:name]) }&= x[:name]
@@ -36,7 +36,7 @@
   - else
     You don't have any apps (yet).
   .btn-toolbar.pull-right
-    - if MODIFY and not @naps.empty?
+    - if NAP_APP_MODIFY && ! naps.empty?
       %a.btn.app-all{ href: r(:st_all),
                       :'data-action' => 'Starting' }
         %i.icon-play

@@ -1,4 +1,11 @@
 body { padding-top: 90px; }
+
 .w30 { width: 30%; }
 .w50 { width: 50%; }
 .w70 { width: 70%; }
+.w99 { width: 99%; }
+
+.line-numbers {
+  min-width:  27px;
+  text-align: right;
+}

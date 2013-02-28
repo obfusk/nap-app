@@ -1,16 +1,16 @@
-!!! 5
+!!!
 %html
   %head
-    %title&= @title
-    - (LAYOUT_CSS + @layout_css).each do |x|
+    %title&= title
+    - @layout_css.each do |x|
       %link{ rel: 'stylesheet', type: 'text/css', href: x }
-    - (LAYOUT_JS + @layout_js).each do |x|
+    - @layout_js.each do |x|
       %script{ type: 'text/javascript', src: x }
   %body
     .navbar.navbar-fixed-top.navbar-inverse
       .navbar-inner
         .container
-          %a.brand{ href: BRAND_URL }&= BRAND
+          %a.brand{ href: CONFIG[:brand_url] }&= CONFIG[:brand]
           %ul.nav
             %li{ class: act(:apps) }
               %a{ href: r(:apps) } apps
