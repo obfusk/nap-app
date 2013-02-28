@@ -81,6 +81,7 @@ module Obfusk; module Nap; class App < Sinatra::Base
   def self.sys (x)                                              # {{{1
     pid = fork do
       Process.setsid  # will kill server otherwise
+      p :exec, x      # DEBUG
       exec x          # CAREFUL !!!
     end
     Process.waitpid pid
