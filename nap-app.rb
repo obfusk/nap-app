@@ -227,9 +227,9 @@ module Obfusk; module Nap; class App < Sinatra::Base
   # --
 
   if NAP_APP_MODIFY
-    post %r[^/start/([a-z0-9_-]+)$] { |app|  cmd :start, app  }
-    post %r[^/stop/([a-z0-9_-]+)$]  { |app|  cmd :stop , app  }
-    post '/start-all'               {        cmd :st_all      }
+    post(%r[^/start/([a-z0-9_-]+)$])  { |app| cmd :start, app }
+    post(%r[^/stop/([a-z0-9_-]+)$])   { |app| cmd :stop , app }
+    post('/start-all')                {       cmd :st_all     }
   end
 
 end; end; end
