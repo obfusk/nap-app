@@ -81,7 +81,6 @@ module Obfusk; module Nap; class App < Sinatra::Base
   def self.sys (x)                                              # {{{1
     pid = fork do
       Process.setsid  # will kill server otherwise
-      p :exec, x      # DEBUG
       exec x          # CAREFUL !!!
     end
     Process.waitpid pid
@@ -91,9 +90,7 @@ module Obfusk; module Nap; class App < Sinatra::Base
     args.all? { |x| x =~ %r[^([a-z0-9A-Z@.:/_-]+)$] } \
       or raise 'invalid argument'
 
-    p :cmd, x, args # DEBUG
-
-    r = COMMANDS[x][*args]
+    r = Bundler.with_clean_env { COMMANDS[x][*args] }
     $?.exitstatus == 0 or raise 'command returned non-zero'
     r
   end                                                           # }}}1
