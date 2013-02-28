@@ -13,7 +13,11 @@ $ ->
     s.text x.attr('data-action') + ' ...'
     i.removeClass 'icon-play icon-stop'
 
-    $.post this.href, -> location.reload()
+    $.ajax
+      type: 'POST', url: this.href
+      success: -> location.reload()
+      error: -> alert 'AJAX error'
+
     false
 
   $('.app-mod, .app-all').click f
