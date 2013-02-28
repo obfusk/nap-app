@@ -196,7 +196,7 @@ module Obfusk; module Nap; class App < Sinatra::Base
     ns = naps
 
     activate :apps
-    layout_js *NAPS_JS if NAP_APP_MODIFY && !ns.empty?
+    layout_js *CONFIG[:naps_js] if NAP_APP_MODIFY && !ns.empty?
 
     haml :apps,
       naps:   ns,
