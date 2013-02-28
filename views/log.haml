@@ -8,6 +8,4 @@
       %a{ href: r(:app, app[:name]) }&= app[:name]
       \/ log /
       &= app[:log]
-  %pre
-    - log.each do |x|
-      &= x + "\n"
+  %pre&= log.join "\n"

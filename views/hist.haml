@@ -8,6 +8,4 @@
       %a{ href: r(:app, app[:name]) }&= app[:name]
       \/ history
   %pre&= hist[:cmd]
-  %pre
-    - hist[:lines].each do |x|
-      &= x + "\n"
+  %pre&= hist[:lines].join "\n"
