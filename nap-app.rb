@@ -32,8 +32,8 @@ module Obfusk; module Nap; class App < Sinatra::Base
   # --
 
   CONFIG = {                                                    # {{{1
-    hist:       5,
-    tail:       20,
+    hist:       10,
+    tail:       40,
 
     brand:      'nap',
     brand_url:  'http://obfusk.github.com/nap/',
