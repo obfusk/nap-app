@@ -2,7 +2,7 @@
 #
 # File        : nap-app.rb
 # Maintainer  : Felix C. Stegerman <flx@obfusk.net>
-# Date        : 2013-02-28
+# Date        : 2014-07-31
 #
 # Copyright   : Copyright (C) 2013  Felix C. Stegerman
 # Licence     : GPLv2
@@ -123,17 +123,19 @@ module Obfusk; module Nap; class App < Sinatra::Base
 
   def icon (stat)                                               # {{{1
     case stat
-      when 'dead'   ; 'exclamation-sign'
-      when 'stopped'; 'off'
-      when 'running'; 'ok'
+      when 'dead'     ; 'exclamation-sign'
+      when 'stopped'  ; 'off'
+      when 'running'  ; 'ok'
+      when '(static)' ; 'ok'
     end
   end                                                           # }}}1
 
   def label (stat)                                              # {{{1
     case stat
-      when 'dead'   ; 'label-important'
-      when 'stopped'; 'label-info'
-      when 'running'; 'label-success'
+      when 'dead'     ; 'label-important'
+      when 'stopped'  ; 'label-info'
+      when 'running'  ; 'label-success'
+      when '(static)' ; 'label-success'
     end
   end                                                           # }}}1
 
@@ -143,6 +145,7 @@ module Obfusk; module Nap; class App < Sinatra::Base
     act, ing, icon = case stat
       when 'dead', 'stopped'; [:start, 'Starting', 'play']
       when 'running'        ; [:stop , 'Stopping', 'stop']
+      else return
     end
 
     { link: r(act, app), icon: icon, act: ing }
